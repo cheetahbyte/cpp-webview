@@ -58,7 +58,7 @@ add_executable(Todos ${APP_TYPE}
 
 # --- macOS Info.plist Configuration ---
 if(APPLE)
-    set_target_properties(app PROPERTIES
+    set_target_properties(Todos PROPERTIES
             MACOSX_BUNDLE_BUNDLE_NAME "Todos"
             MACOSX_BUNDLE_GUI_IDENTIFIER "de.leonhardbreuer.Todos"
             MACOSX_BUNDLE_ICON_FILE "AppIcon.icns"
@@ -72,4 +72,4 @@ endif()
 # --- Includes & Links ---
 
 target_include_directories(Todos PRIVATE ui/dist)
-target_link_libraries(app PRIVATE webview::core nlohmann_json::nlohmann_json)
+target_link_libraries(Todos PRIVATE webview::core nlohmann_json::nlohmann_json)
