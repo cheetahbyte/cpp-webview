@@ -37,16 +37,21 @@ set(EXTRA_SOURCES "ui/dist/index_html.h") # Include generated header so IDE sees
 if(APPLE)
     # macOS: Needs MACOSX_BUNDLE flag and the Icon file in sources
     set(APP_TYPE MACOSX_BUNDLE)
-    list(APPEND EXTRA_SOURCES ${ICON_SOURCE})
 
-    # Tell CMake to copy the icon into the App Bundle's 'Resources' folder
-    set_source_files_properties(${ICON_SOURCE} PROPERTIES
-            MACOSX_PACKAGE_LOCATION Resources
-    )
+    # Add the Objective-C++ file to the sources
+    list(APPEND EXTRA_SOURCES src/menu_mac.mm)
+
+    list(APPEND EXTRA_SOURCES ${ICON_SOURCE})
+    set_source_files_properties(${ICON_SOURCE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+    # LINK COCOA FRAMEWORK (Required for NSMenu)
+    find_library(COCOA_FRAMEWORK Cocoa)
+    set(PLATFORM_LIBS ${COCOA_FRAMEWORK})
 elseif(WIN32)
     set(APP_TYPE WIN32)
 else()
-    set(APP_TYPE "")
+    set(APP_TYPE ""
+            src/menu.h)
 endif()
 
 # --- Build Target ---
@@ -70,6 +75,9 @@ if(APPLE)
 endif()
 
 # --- Includes & Links ---
-
 target_include_directories(Todos PRIVATE ui/dist)
-target_link_libraries(Todos PRIVATE webview::core nlohmann_json::nlohmann_json)
+target_link_libraries(Todos PRIVATE
+        webview::core
+        nlohmann_json::nlohmann_json
+        ${PLATFORM_LIBS}
+)
