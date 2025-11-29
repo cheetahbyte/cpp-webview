@@ -51,7 +51,7 @@ endif()
 
 # --- Build Target ---
 
-add_executable(app ${APP_TYPE}
+add_executable(Todos ${APP_TYPE}
         src/main.cpp
         ${EXTRA_SOURCES}
 )
@@ -59,10 +59,10 @@ add_executable(app ${APP_TYPE}
 # --- macOS Info.plist Configuration ---
 if(APPLE)
     set_target_properties(app PROPERTIES
-            MACOSX_BUNDLE_BUNDLE_NAME "My App"
-            MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.app"
+            MACOSX_BUNDLE_BUNDLE_NAME "Todos"
+            MACOSX_BUNDLE_GUI_IDENTIFIER "de.leonhardbreuer.Todos"
             MACOSX_BUNDLE_ICON_FILE "AppIcon.icns"
-            MACOSX_BUNDLE_INFO_STRING "My App v1.0"
+            MACOSX_BUNDLE_INFO_STRING "Todos v1.0"
             MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
             MACOSX_BUNDLE_BUNDLE_VERSION "1"
             MACOSX_BUNDLE_COPYRIGHT "Copyright © 2025"
@@ -71,5 +71,5 @@ endif()
 
 # --- Includes & Links ---
 
-target_include_directories(app PRIVATE ui/dist)
+target_include_directories(Todos PRIVATE ui/dist)
 target_link_libraries(app PRIVATE webview::core nlohmann_json::nlohmann_json)
