@@ -58,6 +58,10 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 # ------------------------------------------------------------------------------
 # 5. Saucer Embed & Configuration
 # ------------------------------------------------------------------------------
+file(GLOB_RECURSE FRONTEND_ASSETS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/ui/dist/*")
+
+target_sources(${PROJECT_NAME} PRIVATE ${FRONTEND_ASSETS})
+
 saucer_embed("./ui/dist")
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)

@@ -1,7 +1,7 @@
 #include <print>
 #include <saucer/smartview.hpp>
 #include <saucer/embedded/all.hpp>
-
+#include <iostream>
 
 coco::stray start(saucer::application *app)
 {
@@ -10,21 +10,13 @@ coco::stray start(saucer::application *app)
 
 
     window->set_title("Hello World!");
+    window->set_min_size({800, 600});
 
+    webview->expose("toggle_devtools", [&]() {
+        bool current_state = webview->dev_tools();
+        webview->set_dev_tools(!current_state);
 
-    webview->expose("call_me", [&](double a, double b)
-    {
-        std::println("Called with: a = {}, b = {}", a, b);
-        return a + b;
-    });
-
-
-    webview->expose("call_me_too", [&]() -> coco::task<double>
-    {
-
-        auto random = co_await webview->evaluate<double>("Math.random()");
-        std::println("Random: {}", random);
-        co_return random;
+        std::cout << "DevTools enabled: " << (!current_state) << std::endl;
     });
 
     webview->embed(saucer::embedded::all());
