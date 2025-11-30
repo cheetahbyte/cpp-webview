@@ -2,11 +2,9 @@
 #import <Cocoa/Cocoa.h>
 
 void create_macos_menu() {
-    // 1. Create the Menu Bar
     NSMenu *menubar = [[NSMenu alloc] init];
     [NSApp setMainMenu:menubar];
 
-    // 2. Create the "App" Menu (The one with the app name)
     NSMenuItem *appMenuItem = [[NSMenuItem alloc] init];
     [menubar addItem:appMenuItem];
 

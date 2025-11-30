@@ -18,7 +18,7 @@ int main() {
 #endif
     try {
         webview::webview main_window(false, nullptr);
-        main_window.set_title("App");
+        main_window.set_title("Todos");
         main_window.set_size(1280, 720, WEBVIEW_HINT_NONE);
 
 #ifdef __APPLE__
