@@ -1,36 +1,42 @@
-#include <iostream>
-#include <nlohmann/json.hpp>
-#include "webview/webview.h"
-#include "index_html.h"
+#include <print>
+#include <saucer/smartview.hpp>
+#include <saucer/embedded/all.hpp>
 
-// Include our new header
-#ifdef __APPLE__
-#include "menu.h"
-#endif
 
-using json = nlohmann::json;
+coco::stray start(saucer::application *app)
+{
+    auto window  = saucer::window::create(app).value();
+    auto webview = saucer::smartview<>::create({.window = window});
 
-#ifdef _WIN32
-int WINAPI WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/,
-                   LPSTR /*lpCmdLine*/, int /*nCmdShow*/) {
-#else
-int main() {
-#endif
-    try {
-        webview::webview main_window(false, nullptr);
-        main_window.set_title("Todos");
-        main_window.set_size(1280, 720, WEBVIEW_HINT_NONE);
 
-#ifdef __APPLE__
-        create_macos_menu();
-#endif
+    window->set_title("Hello World!");
 
-        main_window.set_html(INDEX_HTML);
-        main_window.run();
-    } catch (const webview::exception &e) {
-        std::cerr << e.what() << '\n';
-        return 1;
-    }
 
-    return 0;
+    webview->expose("call_me", [&](double a, double b)
+    {
+        std::println("Called with: a = {}, b = {}", a, b);
+        return a + b;
+    });
+
+
+    webview->expose("call_me_too", [&]() -> coco::task<double>
+    {
+
+        auto random = co_await webview->evaluate<double>("Math.random()");
+        std::println("Random: {}", random);
+        co_return random;
+    });
+
+    webview->embed(saucer::embedded::all());
+    webview->serve("/index.html");
+
+    window->show();
+
+
+    co_await app->finish();
+}
+
+int main()
+{
+    return saucer::application::create({.id = "hello-world"})->run(start);
 }

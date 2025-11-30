@@ -1,83 +1,84 @@
-cmake_minimum_required(VERSION 3.16)
-project(app LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.21)
 
-# --- Output Settings ---
+# ------------------------------------------------------------------------------
+# 1. Project Configuration
+# ------------------------------------------------------------------------------
+project(Todos LANGUAGES CXX OBJCXX VERSION 1.0.0)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# --- Dependencies ---
-set(WEBVIEW_WEBKITGTK_API 6.0)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ------------------------------------------------------------------------------
+# 2. Dependencies
+# ------------------------------------------------------------------------------
 include(FetchContent)
 
-# 1. WebView
 FetchContent_Declare(
-        webview
-        GIT_REPOSITORY https://github.com/webview/webview
-        GIT_TAG 0.12.0
+    saucer
+    GIT_REPOSITORY "https://github.com/saucer/saucer"
+    GIT_TAG v7.0.2
 )
-FetchContent_MakeAvailable(webview)
+FetchContent_MakeAvailable(saucer)
 
-# 2. Nlohmann Json
-FetchContent_Declare(
-        json
-        GIT_REPOSITORY https://github.com/nlohmann/json
-        GIT_TAG v3.12.0
-)
-FetchContent_MakeAvailable(json)
-
-# --- Platform & Icon Configuration ---
-
-# Path to your icon file
-set(ICON_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources/AppIcon.icns")
-set(EXTRA_SOURCES "ui/dist/index_html.h") # Include generated header so IDE sees it
+# ------------------------------------------------------------------------------
+# 3. Source & Platform Logic
+# ------------------------------------------------------------------------------
+set(PROJECT_SOURCES "src/main.cpp")
+set(PROJECT_LIBRARIES "")
 
 if(APPLE)
-    # macOS: Needs MACOSX_BUNDLE flag and the Icon file in sources
-    set(APP_TYPE MACOSX_BUNDLE)
+    # macOS Specific Configuration
+    set(MACOS_APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/AppIcon.icns")
+    set_source_files_properties(${MACOS_APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
-    # Add the Objective-C++ file to the sources
-    list(APPEND EXTRA_SOURCES src/menu_mac.mm)
+    # Add Mac-specific sources
+    list(APPEND PROJECT_SOURCES
+        "src/menu_mac.mm"
+        "${MACOS_APP_ICON}"
+    )
 
-    list(APPEND EXTRA_SOURCES ${ICON_SOURCE})
-    set_source_files_properties(${ICON_SOURCE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-
-    # LINK COCOA FRAMEWORK (Required for NSMenu)
+    # Find and link Cocoa
     find_library(COCOA_FRAMEWORK Cocoa)
-    set(PLATFORM_LIBS ${COCOA_FRAMEWORK})
-elseif(WIN32)
-    set(APP_TYPE WIN32)
-else()
-    set(APP_TYPE ""
-            src/menu.h)
+    list(APPEND PROJECT_LIBRARIES ${COCOA_FRAMEWORK})
 endif()
 
-# --- Build Target ---
+# ------------------------------------------------------------------------------
+# 4. Target Definition
+# ------------------------------------------------------------------------------
+add_executable(${PROJECT_NAME} MACOSX_BUNDLE)
 
-add_executable(Todos ${APP_TYPE}
-        src/main.cpp
-        ${EXTRA_SOURCES}
+target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
+
+# ------------------------------------------------------------------------------
+# 5. Saucer Embed & Configuration
+# ------------------------------------------------------------------------------
+saucer_embed("./ui/dist")
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    saucer::saucer
+    saucer::embedded
+    ${PROJECT_LIBRARIES}
 )
 
-# --- macOS Info.plist Configuration ---
+# ------------------------------------------------------------------------------
+# 6. Bundle Properties (macOS)
+# ------------------------------------------------------------------------------
 if(APPLE)
-    set_target_properties(Todos PROPERTIES
-            MACOSX_BUNDLE_BUNDLE_NAME "Todos"
-            MACOSX_BUNDLE_GUI_IDENTIFIER "de.leonhardbreuer.Todos"
-            MACOSX_BUNDLE_ICON_FILE "AppIcon.icns"
-            MACOSX_BUNDLE_INFO_STRING "Todos v1.0"
-            MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
-            MACOSX_BUNDLE_BUNDLE_VERSION "1"
-            MACOSX_BUNDLE_COPYRIGHT "Copyright © 2025"
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE_BUNDLE_NAME "Todos"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "de.leonhardbreuer.Todos"
+        MACOSX_BUNDLE_ICON_FILE "AppIcon.icns"
+        MACOSX_BUNDLE_INFO_STRING "Todos v1.0"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_COPYRIGHT "Copyright © 2025"
     )
 endif()
-
-# --- Includes & Links ---
-target_include_directories(Todos PRIVATE ui/dist)
-target_link_libraries(Todos PRIVATE
-        webview::core
-        nlohmann_json::nlohmann_json
-        ${PLATFORM_LIBS}
-)
